@@ -1,3 +1,7 @@
+````bash
+cd /home/dev/DeskMobile_React
+
+cat > README.md <<'EOF'
 # DeskMobile React
 
 Generic React SDK for desktop and mobile QR linking using DeskMobile Laravel API.
@@ -6,11 +10,11 @@ Generic React SDK for desktop and mobile QR linking using DeskMobile Laravel API
 
 ```bash
 npm install @nilamdoc/deskmobile-react
-```
-
-## DeskMobile_React
+````
 
 ## Usage
+
+```tsx
 import { DeskMobileLink } from "@nilamdoc/deskmobile-react";
 
 export default function LinkPage() {
@@ -24,40 +28,110 @@ export default function LinkPage() {
     />
   );
 }
+```
 
 ## Hook Usage
+
+```tsx
 import { useDeskMobileLink } from "@nilamdoc/deskmobile-react";
 
-const {
-  qrPayload,
-  status,
-  message,
-  createLink,
-  cancelLink
-} = useDeskMobileLink({
-  baseUrl: "https://your-domain.com/api/deskmobile",
-});
+export default function CustomLinkPage() {
+  const {
+    qrPayload,
+    status,
+    message,
+    createLink,
+    cancelLink,
+  } = useDeskMobileLink({
+    baseUrl: "https://your-domain.com/api/deskmobile",
+  });
+
+  return (
+    <div>
+      <p>Status: {status}</p>
+      <p>{message}</p>
+
+      {qrPayload && <p>{qrPayload}</p>}
+
+      <button type="button" onClick={createLink}>
+        Generate QR
+      </button>
+
+      <button type="button" onClick={cancelLink}>
+        Cancel
+      </button>
+    </div>
+  );
+}
+```
+
+## Props
+
+| Prop             | Type       | Default                  | Description                              |
+| ---------------- | ---------- | ------------------------ | ---------------------------------------- |
+| `baseUrl`        | `string`   | Required                 | DeskMobile Laravel API base URL.         |
+| `title`          | `string`   | `Link Desktop`           | Page or card title.                      |
+| `subtitle`       | `string`   | Default instruction text | Description shown under title.           |
+| `logoText`       | `string`   | `DM`                     | Logo text shown in the card.             |
+| `size`           | `number`   | `240`                    | QR code size.                            |
+| `pollIntervalMs` | `number`   | `2000`                   | Status polling interval in milliseconds. |
+| `showPayload`    | `boolean`  | `false`                  | Show QR payload text below the QR.       |
+| `onApproved`     | `function` | Optional                 | Called when mobile approves the QR link. |
+| `onExpired`      | `function` | Optional                 | Called when QR expires.                  |
+| `onCancelled`    | `function` | Optional                 | Called when link request is cancelled.   |
+| `onError`        | `function` | Optional                 | Called when API or browser error occurs. |
 
 ## Backend Required
 
-Install Laravel package:
+Install the Laravel backend package:
 
+```bash
 composer require nilamdoc/deskmobile:^1.0
+```
 
-endpoints:
+Publish config:
 
+```bash
+php artisan vendor:publish --tag=deskmobile-config
+php artisan optimize:clear
+```
+
+## Required Backend Endpoints
+
+```text
 POST /api/deskmobile/link/create
 GET  /api/deskmobile/link/status/{token}
 POST /api/deskmobile/link/approve
 POST /api/deskmobile/link/cancel
 GET  /api/deskmobile/scan/{token}
-
-## 6. Create LICENSE
-
-```bash
-nano LICENSE
 ```
-Paste:
+
+## Example With Real Domain
+
+```tsx
+import { DeskMobileLink } from "@nilamdoc/deskmobile-react";
+
+export default function DeviceLink() {
+  return (
+    <DeskMobileLink
+      baseUrl="https://images.ruchidoctor.com/api/deskmobile"
+      onApproved={() => {
+        window.location.href = "/dashboard";
+      }}
+      showPayload
+    />
+  );
+}
+```
+
+## Package Links
+
+```text
+NPM Package: @nilamdoc/deskmobile-react
+Laravel Backend Package: nilamdoc/deskmobile
+```
+
+## License
 
 MIT License
 
@@ -73,5 +147,21 @@ The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
+EOF
 
+````
 
+Then publish updated README:
+
+```bash
+cd /home/dev/DeskMobile_React
+
+npm version patch
+npm publish --access public
+````
+
+It will publish next version, for example:
+
+```text
+@nilamdoc/deskmobile-react@1.0.1
+```
