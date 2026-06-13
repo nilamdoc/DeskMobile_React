@@ -5,10 +5,13 @@ Generic React SDK for desktop and mobile QR linking using DeskMobile Laravel API
 ## Install
 
 ```bash
-npm install @nilamdoc/deskmobile-react# DeskMobile_React
+npm install @nilamdoc/deskmobile-react
 
 
-# Usage
+## DeskMobile_React
+
+
+## Usage
 import { DeskMobileLink } from "@nilamdoc/deskmobile-react";
 
 export default function LinkPage() {
@@ -23,7 +26,7 @@ export default function LinkPage() {
   );
 }
 
-# Hook Usage
+## Hook Usage
 import { useDeskMobileLink } from "@nilamdoc/deskmobile-react";
 
 const {
@@ -36,7 +39,7 @@ const {
   baseUrl: "https://your-domain.com/api/deskmobile",
 });
 
-# Backend Required
+## Backend Required
 
 Install Laravel package:
 
