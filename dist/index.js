@@ -101,8 +101,7 @@ function useDeskMobileLink(options) {
       const response = await fetch(`${apiBase}/link/create`, {
         method: "POST",
         headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json"
+          Accept: "application/json"
         }
       });
       const data = await readJson(response);

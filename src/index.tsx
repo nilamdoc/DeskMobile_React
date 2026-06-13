@@ -172,14 +172,12 @@ export function useDeskMobileLink(options: UseDeskMobileLinkOptions): UseDeskMob
     tokenRef.current = null;
 
     try {
-      const response = await fetch(`${apiBase}/link/create`, {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-      });
-
+     const response = await fetch(`${apiBase}/link/create`, {
+       method: "POST",
+       headers: {
+         Accept: "application/json",
+       },
+     });
       const data = await readJson<DeskMobileCreateResponse>(response);
 
       if (!response.ok || !data.success || !data.token || !data.qr_payload) {
