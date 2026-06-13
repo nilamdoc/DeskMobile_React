@@ -147,21 +147,4 @@ The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
-EOF
-
 ````
-
-Then publish updated README:
-
-```bash
-cd /home/dev/DeskMobile_React
-
-npm version patch
-npm publish --access public
-````
-
-It will publish next version, for example:
-
-```text
-@nilamdoc/deskmobile-react@1.0.1
-```
