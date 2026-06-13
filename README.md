@@ -6,10 +6,9 @@ Generic React SDK for desktop and mobile QR linking using DeskMobile Laravel API
 
 ```bash
 npm install @nilamdoc/deskmobile-react
-
+```
 
 ## DeskMobile_React
-
 
 ## Usage
 import { DeskMobileLink } from "@nilamdoc/deskmobile-react";
@@ -57,7 +56,7 @@ GET  /api/deskmobile/scan/{token}
 
 ```bash
 nano LICENSE
-
+```
 Paste:
 
 MIT License
