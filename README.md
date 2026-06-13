@@ -1,7 +1,3 @@
-````bash
-cd /home/dev/DeskMobile_React
-
-cat > README.md <<'EOF'
 # DeskMobile React
 
 Generic React SDK for desktop and mobile QR linking using DeskMobile Laravel API.
