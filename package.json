@@ -1,0 +1,44 @@
+{
+  "name": "@nilamdoc/deskmobile-react",
+  "version": "1.0.0",
+  "description": "Generic React SDK for desktop and mobile QR linking using DeskMobile Laravel API.",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup src/index.tsx --format esm,cjs --dts",
+    "dev": "tsup src/index.tsx --format esm,cjs --dts --watch",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "deskmobile",
+    "qr",
+    "desktop",
+    "mobile",
+    "react",
+    "laravel",
+    "mongodb",
+    "device-link"
+  ],
+  "author": "Nilam Doctor",
+  "license": "MIT",
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "dependencies": {
+    "qrcode.react": "^4.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.6.0"
+  }
+}
