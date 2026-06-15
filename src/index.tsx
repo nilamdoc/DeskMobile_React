@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 
 export type DeskMobileStatus =
@@ -10,18 +10,24 @@ export type DeskMobileStatus =
   | "cancelled"
   | "error";
 
+export type DeskMobileEndpoints = {
+  create: string;
+  status: string;
+  cancel?: string;
+};
+
 export type DeskMobileCreateResponse = {
   success: boolean;
-  token?: string;
-  qr_payload?: string;
-  status?: DeskMobileStatus | string;
+  token: string;
+  qr_payload: string;
+  status?: string;
   expires_at?: string;
   message?: string;
 };
 
 export type DeskMobileStatusResponse = {
   success: boolean;
-  status: DeskMobileStatus | string;
+  status: string;
   token?: string;
   user_id?: string | null;
   user_ref?: string | null;
@@ -31,7 +37,7 @@ export type DeskMobileStatusResponse = {
 };
 
 export type UseDeskMobileLinkOptions = {
-  baseUrl: string;
+  endpoints: DeskMobileEndpoints;
   pollIntervalMs?: number;
   autoCreate?: boolean;
   onApproved?: (data: DeskMobileStatusResponse) => void;
@@ -53,8 +59,8 @@ export type UseDeskMobileLinkResult = {
   checkStatus: () => Promise<void>;
 };
 
-function cleanBaseUrl(baseUrl: string): string {
-  return baseUrl.replace(/\/+$/, "");
+function tokenUrl(url: string, token: string): string {
+  return url.replace(":token", encodeURIComponent(token));
 }
 
 async function readJson<T>(response: Response): Promise<T> {
@@ -69,7 +75,7 @@ async function readJson<T>(response: Response): Promise<T> {
 
 export function useDeskMobileLink(options: UseDeskMobileLinkOptions): UseDeskMobileLinkResult {
   const {
-    baseUrl,
+    endpoints,
     pollIntervalMs = 2000,
     autoCreate = true,
     onApproved,
@@ -77,8 +83,6 @@ export function useDeskMobileLink(options: UseDeskMobileLinkOptions): UseDeskMob
     onCancelled,
     onError,
   } = options;
-
-  const apiBase = useMemo(() => cleanBaseUrl(baseUrl), [baseUrl]);
 
   const [token, setToken] = useState<string | null>(null);
   const [qrPayload, setQrPayload] = useState<string | null>(null);
@@ -105,7 +109,7 @@ export function useDeskMobileLink(options: UseDeskMobileLinkOptions): UseDeskMob
     }
 
     try {
-      const response = await fetch(`${apiBase}/link/status/${encodeURIComponent(currentToken)}`, {
+      const response = await fetch(tokenUrl(endpoints.status, currentToken), {
         headers: {
           Accept: "application/json",
         },
@@ -118,28 +122,21 @@ export function useDeskMobileLink(options: UseDeskMobileLinkOptions): UseDeskMob
       }
 
       const nextStatus = data.status as DeskMobileStatus;
-
       setStatus(nextStatus);
 
       if (nextStatus === "approved") {
         clearPolling();
         setMessage("Desktop linked successfully.");
         onApproved?.(data);
-      }
-
-      if (nextStatus === "expired") {
+      } else if (nextStatus === "expired") {
         clearPolling();
         setMessage("QR code expired. Please generate a new one.");
         onExpired?.(data);
-      }
-
-      if (nextStatus === "cancelled") {
+      } else if (nextStatus === "cancelled") {
         clearPolling();
         setMessage("Link request cancelled.");
         onCancelled?.(data);
-      }
-
-      if (nextStatus === "pending") {
+      } else if (nextStatus === "pending") {
         setMessage("Waiting for mobile approval...");
       }
     } catch (err) {
@@ -150,7 +147,7 @@ export function useDeskMobileLink(options: UseDeskMobileLinkOptions): UseDeskMob
       clearPolling();
       onError?.(err);
     }
-  }, [apiBase, clearPolling, onApproved, onCancelled, onError, onExpired]);
+  }, [endpoints.status, clearPolling, onApproved, onCancelled, onError, onExpired]);
 
   const startPolling = useCallback(() => {
     clearPolling();
@@ -172,12 +169,13 @@ export function useDeskMobileLink(options: UseDeskMobileLinkOptions): UseDeskMob
     tokenRef.current = null;
 
     try {
-     const response = await fetch(`${apiBase}/link/create`, {
-       method: "POST",
-       headers: {
-         Accept: "application/json",
-       },
-     });
+      const response = await fetch(endpoints.create, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+        },
+      });
+
       const data = await readJson<DeskMobileCreateResponse>(response);
 
       if (!response.ok || !data.success || !data.token || !data.qr_payload) {
@@ -188,7 +186,7 @@ export function useDeskMobileLink(options: UseDeskMobileLinkOptions): UseDeskMob
       setQrPayload(data.qr_payload);
       setExpiresAt(data.expires_at || null);
       setStatus("pending");
-      setMessage("Waiting for mobile approval...");
+      setMessage("Waiting for mobile approval.");
       tokenRef.current = data.token;
 
       startPolling();
@@ -199,7 +197,7 @@ export function useDeskMobileLink(options: UseDeskMobileLinkOptions): UseDeskMob
       setMessage(errMessage);
       onError?.(err);
     }
-  }, [apiBase, clearPolling, onError, startPolling]);
+  }, [endpoints.create, clearPolling, onError, startPolling]);
 
   const cancelLink = useCallback(async () => {
     const currentToken = tokenRef.current;
@@ -208,8 +206,15 @@ export function useDeskMobileLink(options: UseDeskMobileLinkOptions): UseDeskMob
       return;
     }
 
+    if (!endpoints.cancel) {
+      clearPolling();
+      setStatus("cancelled");
+      setMessage("Link request cancelled.");
+      return;
+    }
+
     try {
-      await fetch(`${apiBase}/link/cancel`, {
+      await fetch(endpoints.cancel, {
         method: "POST",
         headers: {
           Accept: "application/json",
@@ -230,7 +235,7 @@ export function useDeskMobileLink(options: UseDeskMobileLinkOptions): UseDeskMob
       setMessage(errMessage);
       onError?.(err);
     }
-  }, [apiBase, clearPolling, onError]);
+  }, [endpoints.cancel, clearPolling, onError]);
 
   useEffect(() => {
     if (autoCreate) {
@@ -257,34 +262,34 @@ export function useDeskMobileLink(options: UseDeskMobileLinkOptions): UseDeskMob
 }
 
 export type DeskMobileLinkProps = {
-  baseUrl: string;
+  endpoints: DeskMobileEndpoints;
   title?: string;
   subtitle?: string;
   logoText?: string;
   size?: number;
   pollIntervalMs?: number;
+  showPayload?: boolean;
+  className?: string;
   onApproved?: (data: DeskMobileStatusResponse) => void;
   onExpired?: (data: DeskMobileStatusResponse) => void;
   onCancelled?: (data: DeskMobileStatusResponse) => void;
   onError?: (error: unknown) => void;
-  className?: string;
-  showPayload?: boolean;
 };
 
 export function DeskMobileLink(props: DeskMobileLinkProps) {
   const {
-    baseUrl,
+    endpoints,
     title = "Link Desktop",
     subtitle = "Open your mobile app and scan this QR code to link your account.",
     logoText = "DM",
     size = 240,
     pollIntervalMs = 2000,
+    showPayload = false,
+    className,
     onApproved,
     onExpired,
     onCancelled,
     onError,
-    className,
-    showPayload = false,
   } = props;
 
   const {
@@ -295,7 +300,7 @@ export function DeskMobileLink(props: DeskMobileLinkProps) {
     createLink,
     cancelLink,
   } = useDeskMobileLink({
-    baseUrl,
+    endpoints,
     pollIntervalMs,
     autoCreate: true,
     onApproved,
@@ -334,9 +339,7 @@ export function DeskMobileLink(props: DeskMobileLinkProps) {
           )}
         </div>
 
-        <div className={statusClass}>
-          {error || message}
-        </div>
+        <div className={statusClass}>{error || message}</div>
 
         <div className="dm-actions">
           <button type="button" className="dm-btn" onClick={createLink}>
@@ -403,7 +406,6 @@ export const deskMobileDefaultStyles = `
   margin: 0;
   font-size: 27px;
   font-weight: 900;
-  color: #111827;
 }
 .dm-subtitle {
   margin: 8px auto 0;

@@ -110,7 +110,7 @@ import { DeskMobileLink } from "@nilamdoc/deskmobile-react";
 export default function DeviceLink() {
   return (
     <DeskMobileLink
-      baseUrl="https://images.ruchidoctor.com/api/deskmobile"
+      baseUrl="https://your-laravel-domain.com/api/deskmobile"
       onApproved={() => {
         window.location.href = "/dashboard";
       }}

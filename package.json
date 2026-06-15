@@ -1,7 +1,7 @@
 {
   "name": "@nilamdoc/deskmobile-react",
-  "version": "1.0.0",
-  "description": "Generic React SDK for desktop and mobile QR linking using DeskMobile Laravel API.",
+  "version": "2.0.0",
+  "description": "Backend independent React SDK for desktop and mobile QR linking.",
   "type": "module",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
@@ -22,9 +22,8 @@
     "desktop",
     "mobile",
     "react",
-    "laravel",
-    "mongodb",
-    "device-link"
+    "device-link",
+    "backend-independent"
   ],
   "author": "Nilam Doctor",
   "license": "MIT",
